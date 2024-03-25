@@ -1,17 +1,16 @@
-FROM alpine:3
+FROM golang:alpine3.19
 
 RUN apk add --no-cache \
-        curl
+        git
 
-RUN mkdir -p /opt/buildevents
+RUN git clone \
+      --depth 1 \
+      --branch "v0.16.0"  \
+      https://github.com/honeycombio/buildevents /opt/buildevents \
+    && cd /opt/buildevents \
+    && go install github.com/honeycombio/buildevents/
 
-WORKDIR /opt/buildevents
+RUN apk del \
+        git
 
-# Install buildevents
-RUN curl -L \
-    -o buildevents \
-    https://github.com/honeycombio/buildevents/releases/download/v0.16.0/buildevents-linux-amd64 \
-    && chmod 755 buildevents
-
-CMD ["/opt/buildevents/buildevents", "--help"]
-
+ENTRYPOINT ["buildevents"]
